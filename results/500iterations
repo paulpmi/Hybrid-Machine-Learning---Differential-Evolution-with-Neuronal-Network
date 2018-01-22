@@ -1,4 +1,5 @@
 500 iterations using 35 Individuals and 30 Candidates to change each generation
+Each Individual uses 1380 inputs for computing its fitness
 
 
 ['65.43430000000001', '53.24640000000001', '53.2115', '53.2115', '49.411500000000004', '49.5668', '49.7898', '49.831599999999995', '50.0865', '50.0952']

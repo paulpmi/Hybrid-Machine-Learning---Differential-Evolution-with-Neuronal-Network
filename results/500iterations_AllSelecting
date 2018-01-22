@@ -1,3 +1,6 @@
+Results using 500 iterations with 35 Population and selecting all of them for crossover and mutation.
+Each Individual uses 1380 inputs for computing its fitness
+
 
 ['61.784099999999995', '49.797599999999996', '49.8863', '49.9101', '49.968', '50.099700000000006', '50.165400000000005', '50.4443', '87.7422', '24.3277']
 [106.77]
