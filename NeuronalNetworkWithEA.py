@@ -35,7 +35,7 @@ class Problem:
             i += 1
         return out
 
-    def readCSV(self, filename, start=0, end=1380):
+    def readCSV(self, filename, start=0, end=1400):
         #with open('filename.csv', 'rb') as f:
 
         return pandas.read_excel(filename)[start:end]
@@ -46,8 +46,8 @@ class Individual:
     def __init__(self):
         self.neuronsInput = 3
         self.neuronsOutput = 1
-        self.neuronsHidden = 5
-        self.nrHidden = 5
+        self.neuronsHidden = 2
+        self.nrHidden = 2
 
         self.fit = 0
 
@@ -56,7 +56,7 @@ class Individual:
 
         data = pandas.ExcelFile('output.xlsx')
         sheet = data.parse('Sheet1')
-        self.outputNodes = self.normiliseOutput(sheet.values.tolist()[:1380])
+        self.outputNodes = self.normiliseOutput(sheet.values.tolist()[:1400])
         #self.outputNodes = shuffle(self.outputNodes)
         self.input = numpy.asarray(self.input, dtype=numpy.float64)
         #self.input = shuffle(self.input)
