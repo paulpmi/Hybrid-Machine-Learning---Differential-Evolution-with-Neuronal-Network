@@ -318,6 +318,7 @@ class Individual:
         if i > mutationProb:
             donorVector = Individual()
             factor = random.uniform(-1, 1) # used be 0.5
+            # maybe we shoulld only update one x or less than all????
             donorVector.x = self.equation(parent1, parent2, parent3, factor)
 
             return donorVector
@@ -412,7 +413,7 @@ class Algorthm:
 
     def iteration(self):
         indexes = range(self.noInd)
-        no = self.noInd // 2
+        no = self.noInd  # // 2
         offspring = Population(self.sizePop, no)
         k = 1
         shuffle(self.population.population)
@@ -458,12 +459,14 @@ class Algorthm:
                             output2.append(str(sol.checkSolution([29.75, 0.136])))
                             output2.append(str(sol.checkSolution([70.73, 0.535])))
                             output2.append(str(sol.checkSolution([72.15, 0.565])))
-                            file2 = open("Final_Appended_second.txt", "a")
-                            file2.write('OUTPUT 2. Solutions [30.4, 72.235555555555, 72.23]. Results are: ')
-                            file2.write('\n')
-                            file2.write(str(output2))
-                            file2.write('\n')
-                            file2.close()
+
+                    if i == 0:
+                        file2 = open("Final_Appended_second.txt", "a")
+                        file2.write('OUTPUT 2. Solutions [30.4, 72.235555555555, 72.23]. Results are: ')
+                        file2.write('\n')
+                        file2.write(str(output2))
+                        file2.write('\n')
+                        file2.close()
 
                     #print("MIDDLE")
                     try:
@@ -495,7 +498,7 @@ class Algorthm:
             f.write(str(data))
 
 
-a = Algorthm(30, 35, 500)
+a = Algorthm(25, 30, 500)
 
 solution = a.run()
 a.writeData("Learning.txt", solution[0].x)
@@ -505,7 +508,7 @@ f = open("checking.txt", 'w')
 output = []
 for sol in solution:
     output.append(str(sol.checkSolution([24.05, 0.13])))
-f.write(str(output)) # output is: 26.41
+f.write(str(output)) # output is: 26.415555555
 
 f = open("checking1.txt", 'w')
 output = []

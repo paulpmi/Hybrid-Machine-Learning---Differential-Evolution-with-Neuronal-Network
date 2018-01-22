@@ -1,6 +1,9 @@
 500 iterations using 40 Individuals and 35 Candidates to change each generation
 Each Individual uses 1380 inputs for computing its fitness
 Each individual uses a Neuronal Network with 3 Input Neurons, 5 Hidden Neurons, 5 hidden layers and 1 Output Neuron
+Crossover & Mutation is done on all weights
+Mutation Factor is random uniform between (-1, 1)
+Mutation Probability is 0.5
 
 ['62.131899999999995', '66.39389999999999', '66.39389999999999', '53.412499999999994', '49.890299999999996', '49.938', '50.4309', '70.9657', '50.6386', '67.974']
 [106.77]
