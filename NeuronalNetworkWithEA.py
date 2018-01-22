@@ -49,6 +49,8 @@ class Individual:
         self.neuronsHidden = 5
         self.nrHidden = 5
 
+        self.fit = 0
+
         # normileze Input Nodes
         self.input = Problem().readCSV('input.xlsx')
 
@@ -127,7 +129,8 @@ class Individual:
 
         sumOutput = []
         for i in output:
-            sumOutput.append(float("{0:.6f}".format(1 / (1 + numpy.exp(-sum(i))))))
+            sumOutput.append(float("{0:.6f}".format(2 / (1 + numpy.exp(-2 * sum(i))) - 1)))
+            #sumOutput.append(float("{0:.6f}".format(1 / (1 + numpy.exp(-sum(i))))))
         return sumOutput, pos
 
     def newActivationRelu(self, nodes, weights, position, nrNeuronsNextLayer):
@@ -199,6 +202,7 @@ class Individual:
             fit += (self.y[candidate] - output)**2
             candidate += 1
             """
+        self.fit = fit
         return fit
 
     def checkSolution(self, proposition):
@@ -305,14 +309,14 @@ class Individual:
             i += 1
         return trialVector
 
-    def equation(self, parent1, parent2, parent3, Factor):
+    def OldEquation(self, parent1, parent2, parent3, Factor):
         l = []
         for i in range(parent1.size):
             nr = (parent2.x[i] - parent3.x[i]) * Factor + parent1.x[i]
             l.append(nr)
         return l
 
-    def mutate(self, parent1, parent2, parent3):
+    def OldMutate(self, parent1, parent2, parent3):
         mutationProb = 0.5
         i = random.randint(0, 1)
         if i > mutationProb:
@@ -323,6 +327,28 @@ class Individual:
 
             return donorVector
         return parent1
+
+    def equation(self, parent1, parent2, candidate, Factor):
+        l = []
+        mutationProb = 0.5
+        for i in range(parent1.size):
+            prob = random.randint(0, 1)
+            if prob > mutationProb:
+                nr = (parent2.x[i] - candidate.x[i]) * Factor + parent1.x[i]
+                l.append(nr)
+            else:
+                l.append(candidate.x[i])
+        return l
+
+    def mutate(self, parent1, parent2, candidate):
+        #if i > mutationProb:
+        donorVector = Individual()
+        factor = 0.3 # used be 0.5
+        # maybe we shoulld only update one x or less than all????
+        donorVector.x = self.equation(parent1, parent2, candidate, factor)
+
+        return donorVector
+        #return parent1
 
 
 #i = Individual()
@@ -350,7 +376,7 @@ class Population:
     def evaluate(self):
         sum = 0
         for x in self.population:
-            sum += x.fitness()
+            sum += x.fit
         return sum
 
     def evolve(self):
@@ -394,7 +420,7 @@ class Population:
 
     def selectionDE(self, trialVector, p):
         for i in range(len(self.population)):
-            if trialVector.fitness(p) < self.population[i].fitness():
+            if trialVector.fitness() < self.population[i].fitness():
                 self.population[i] = trialVector
 
     def best(self, n, p):
@@ -411,7 +437,7 @@ class Algorthm:
         self.sizePop = sizePop
         self.generations = generations
 
-    def iteration(self):
+    def OldIteration(self):
         indexes = range(self.noInd)
         no = self.noInd  # // 2
         offspring = Population(self.sizePop, no)
@@ -426,6 +452,23 @@ class Algorthm:
         print(offspringError/self.sizePop)
         # self.population.selectionDE(trialVector, self.p)
         self.population.reunion(trialVector)
+        self.population.selection(self.noInd)
+
+    def iteration(self):
+        indexes = range(self.noInd)
+        no = self.noInd  # // 2
+        offspring = Population(self.sizePop, no)
+        k = 1
+        shuffle(self.population.population)
+        for k in range(no):
+            parent1, parent2, parent3 = random.sample(self.population.population, 3)
+            trialVector = self.population.population[k].crossover(parent1, parent2)
+            donorVector = self.population.population[k].mutate(parent1, parent2, trialVector)
+        offspringError = self.population.evaluate()
+        print("LOG Global Error")
+        print(offspringError/self.sizePop)
+        # self.population.selectionDE(trialVector, self.p)
+        self.population.reunion(donorVector)
         self.population.selection(self.noInd)
 
     def run(self):
@@ -498,7 +541,7 @@ class Algorthm:
             f.write(str(data))
 
 
-a = Algorthm(25, 30, 500)
+a = Algorthm(30, 35, 500)
 
 solution = a.run()
 a.writeData("Learning.txt", solution[0].x)
