@@ -3,7 +3,7 @@ Each Individual uses 1400 inputs for computing its fitness
 Crossover & Mutation is done on all weights
 Mutation Factor is 0.3
 Mutation Probability is 0.5
-All the population becomes candidates for selection
+All the population become candidates for selection
 
 
 ['92.2655', '47.8831', '98.931', '99.0486', '99.181', '99.98', '99.99130000000001', '99.9969', '3.4656', '1.8715']
