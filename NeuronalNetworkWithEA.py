@@ -52,11 +52,11 @@ class Individual:
         self.fit = 0
 
         # normileze Input Nodes
-        self.input = Problem().readCSV('input.xlsx')
+        self.input = Problem().readCSV('input.xlsx', end=900)
 
         data = pandas.ExcelFile('output.xlsx')
         sheet = data.parse('Sheet1')
-        self.outputNodes = self.normiliseOutput(sheet.values.tolist()[:1400])
+        self.outputNodes = self.normiliseOutput(sheet.values.tolist()[:900])
         #self.outputNodes = shuffle(self.outputNodes)
         self.input = numpy.asarray(self.input, dtype=numpy.float64)
         #self.input = shuffle(self.input)
@@ -210,6 +210,7 @@ class Individual:
         #proposition = [1] + proposition
         proposition = numpy.append(1, proposition)
         #print("LOG PROPOSITION: ", proposition)
+        #print(proposition)
         output, position = self.newActivationRelu(proposition, self.x, 0, self.neuronsHidden)
         beforeSynapses = deepcopy(output)
 
@@ -485,7 +486,7 @@ class Algorthm:
             if k % 50 == 0:
                 #print("ENTERED")
                 #print(self.p.readCSV('input.xlsx', k, k+1))
-                candidate = self.p.readCSV('test_input.xlsx',  0, 10)
+                candidate = self.p.readCSV('test_input.xlsx',  0, 17)
                 candidate = numpy.asarray(candidate, dtype=numpy.float64)
                 #shuffle(candidate)
                 candidate = candidate[:10]
@@ -516,7 +517,7 @@ class Algorthm:
                         file = open("Final_Appended_first.txt", "a")
                         file.write('\n')
                         file.write(str(output))
-                        candidateoutput = self.p.readCSV('test_output.xlsx', 0, 10)
+                        candidateoutput = self.p.readCSV('test_output.xlsx', 0, 17)
                         candidateoutput = numpy.asarray(candidateoutput, dtype=numpy.float64)
                         file.write('\n')
                         file.write(str(candidateoutput[i]))
@@ -541,12 +542,11 @@ class Algorthm:
             f.write(str(data))
 
 
-a = Algorthm(30, 35, 500)
+a = Algorthm(60, 60, 1000)
 
 solution = a.run()
 a.writeData("Learning.txt", solution[0].x)
 print(solution[-1].x, solution[-1].fitness())
-
 f = open("checking.txt", 'w')
 output = []
 for sol in solution:
@@ -564,7 +564,6 @@ output = []
 for sol in solution:
     output.append(str(sol.checkSolution([70.73, 0.535])))
 f.write(str(output)) # output is: 72.235555555555
-
 f = open("checking3.txt", 'w')
 output = []
 for sol in solution:
