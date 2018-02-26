@@ -52,11 +52,11 @@ class Individual:
         self.fit = 0
 
         # normileze Input Nodes
-        self.input = Problem().readCSV('input.xlsx', end=900)
+        self.input = Problem().readCSV('input.xlsx', end=900) # end between 900-1400
 
         data = pandas.ExcelFile('output.xlsx')
         sheet = data.parse('Sheet1')
-        self.outputNodes = self.normiliseOutput(sheet.values.tolist()[:900])
+        self.outputNodes = self.normiliseOutput(sheet.values.tolist()[:900]) # 900-1400
         #self.outputNodes = shuffle(self.outputNodes)
         self.input = numpy.asarray(self.input, dtype=numpy.float64)
         #self.input = shuffle(self.input)
@@ -182,8 +182,8 @@ class Individual:
                 beforeSynapses = deepcopy(output)
 
             position += 1
-            output, position = self.newActivation(beforeSynapses, self.x, position, self.neuronsOutput)
-            #print(self.y[candidate], " ", output)
+            output, position = self.newActivationRelu(beforeSynapses, self.x, position, self.neuronsOutput)
+            #print(self.y[candidate], " vs ", output)
             fit += (self.y[candidate] - output[0]) ** 2
             candidate += 1
             #self.activateSoftMax()
@@ -286,6 +286,7 @@ class Individual:
                     normalisedData.append(j/100)
                 else:
                     normalisedData.append(j/100)
+        #print(normalisedData)
         return normalisedData
 
     def computeOutputs(self, trainData):
@@ -489,7 +490,7 @@ class Algorthm:
                 candidate = self.p.readCSV('test_input.xlsx',  0, 17)
                 candidate = numpy.asarray(candidate, dtype=numpy.float64)
                 #shuffle(candidate)
-                candidate = candidate[:10]
+                candidate = candidate[:18]
                 bestSolutions = self.population.best(10, self.p)
                     #print(candidate)
                 for i in range(len(candidate)):
@@ -542,7 +543,8 @@ class Algorthm:
             f.write(str(data))
 
 
-a = Algorthm(60, 60, 1000)
+
+a = Algorthm(50, 50, 1000)
 
 solution = a.run()
 a.writeData("Learning.txt", solution[0].x)
@@ -575,5 +577,3 @@ output = []
 for sol in solution:
     output.append(str(sol.checkSolution([72.15, 0.565])))
 f.write(str(output)) # output is: 71.8
-
-
