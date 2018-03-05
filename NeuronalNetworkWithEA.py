@@ -52,11 +52,16 @@ class Individual:
         self.fit = 0
 
         # normileze Input Nodes
-        self.input = Problem().readCSV('input.xlsx', end=900) # end between 900-1400
+        self.input = Problem().readCSV('input.xlsx', end=1300) # end between 900-1400
+
+        self.test = Problem().readCSV('Test_values.xlsx', end=2077)
 
         data = pandas.ExcelFile('output.xlsx')
         sheet = data.parse('Sheet1')
-        self.outputNodes = self.normiliseOutput(sheet.values.tolist()[:900]) # 900-1400
+        self.outputNodes = self.normiliseOutput(sheet.values.tolist()[:1300]) # 900-1400
+
+        #self.outputNodes = sheet.values.tolist()[:1300]
+
         #self.outputNodes = shuffle(self.outputNodes)
         self.input = numpy.asarray(self.input, dtype=numpy.float64)
         #self.input = shuffle(self.input)
@@ -68,7 +73,18 @@ class Individual:
             l = numpy.append(1, l)
             self.inputNodes.append(l)
 
-        #print(self.inputNodes[:1][0])
+        self.testData = []
+        self.test = numpy.asarray(self.test, dtype=numpy.float64)
+        for i in self.test:
+            l = []
+            l.append(i[0])
+            l.append(i[1])
+            self.testData.append(l)
+
+        #print(self.testData)
+
+        #self.inputNodes = self.input
+
         self.outputNode = numpy.asarray(self.outputNodes, dtype=numpy.float64)
 
         self.x = []
@@ -82,13 +98,23 @@ class Individual:
         for layer in range(self.neuronsHidden * self.neuronsOutput):
             self.x.append(random.uniform(-1, 1))
 
+        #print("LOG X: ", len(self.x))
+
         self.sizeInput = len(self.inputNodes)
 
         self.x = numpy.asarray(self.x, dtype=numpy.float64)
 
         self.y = self.outputNode
-        self.yOutputNode = random.uniform(-1, 1) # this is the actual output node that after the activation gives a result
         self.size = len(self.x)
+
+    def testAlgoritm(self):
+
+        f = open("test.txt", 'w')
+        output = []
+        for i in self.testData:
+            output.append(str(self.checkSolution(i)))
+        f.write(str(output))
+
 
     def updateInput(self, inputFile, outputFile, start, end):
         self.input = Problem().readCSV(inputFile, start, end)
@@ -123,7 +149,7 @@ class Individual:
                 pos += nrNeuronsNextLayer
                 #print("HERE ", j, " ", pos)
                 nodeOutput.append(nodes[j] * weights[pos])
-            #print(pos, " ", position)
+            #print("LOG POS: ", pos, " ", position)
             position += 1
             output.append(nodeOutput)
 
@@ -150,11 +176,12 @@ class Individual:
 
         sumOutput = []
         for i in output:
+            #print(i)
             s = sum(i)
             if s < 0:
                 sumOutput.append(0.01)
             else:
-                sumOutput.append(float("{0:.4f}".format(s)))
+                sumOutput.append(float("{0:.6f}".format(s)))
         return sumOutput, pos
 
     def fitness(self):
@@ -162,19 +189,9 @@ class Individual:
 
         candidate = 0
         for inputN in self.inputNodes:
-            #print(inputN)
-            #print("LOG INPUT NODES")
-            #print(inputN.shape)
-            #output = []
-            #for i in range(0, self.neuronsHidden):
-            #output.append()
-            #output.append(self.activate(inputN, self.x, i, i+self.neuronsInput))
-
             output, position = self.newActivationRelu(inputN, self.x, 0, self.neuronsHidden)
 
             beforeSynapses = deepcopy(output)
-
-            #position = self.neuronsHidden*self.neuronsInput
 
             for i in range(self.nrHidden-1):
                 position += 1
@@ -182,26 +199,12 @@ class Individual:
                 beforeSynapses = deepcopy(output)
 
             position += 1
-            output, position = self.newActivationRelu(beforeSynapses, self.x, position, self.neuronsOutput)
-            #print(self.y[candidate], " vs ", output)
+            #print("Log Position: ", position)
+            output, position = self.newActivation(beforeSynapses, self.x, position, self.neuronsOutput)
+            #print("Log Position: ", position)
             fit += (self.y[candidate] - output[0]) ** 2
             candidate += 1
-            #self.activateSoftMax()
-            """
-            for i in range(self.nrHidden):
-                output = []
-                for j in range(self.neuronsHidden):
-                    output.append(self.activate(beforeSynapses, self.x, position, position+5))
-                    position += 5
-                beforeSynapses = deepcopy(output)
-                #print("LOG TRIAL OUTPUT")
-                #print(output)
-            output = self.activate(output, self.x, position, position+5)
-            #print("LOG SECOND OUTPUT")
-            #print(output)
-            fit += (self.y[candidate] - output)**2
-            candidate += 1
-            """
+
         self.fit = fit
         return fit
 
@@ -332,7 +335,7 @@ class Individual:
 
     def equation(self, parent1, parent2, candidate, Factor):
         l = []
-        mutationProb = 0.5
+        mutationProb = 0.2
         for i in range(parent1.size):
             prob = random.randint(0, 1)
             if prob > mutationProb:
@@ -345,7 +348,7 @@ class Individual:
     def mutate(self, parent1, parent2, candidate):
         #if i > mutationProb:
         donorVector = Individual()
-        factor = 0.3 # used be 0.5
+        factor = 0.7  # used be 0.5
         # maybe we shoulld only update one x or less than all????
         donorVector.x = self.equation(parent1, parent2, candidate, factor)
 
@@ -381,49 +384,49 @@ class Population:
             sum += x.fit
         return sum
 
-    def evolve(self):
+    def evolve(self, noInd):
         mutationProb = 0.5
-        for i in range(self.sizePop):
+        childred = []
+        for i in range(noInd):
             candidate = self.population[i]
             parents = random.sample(self.population, 2)
-            parent1 = random.choice(parents)
-            parent2 = random.choice(parents)
-            while parent1 == candidate or parent2 == candidate:
+            parent1 = parents[0]
+            parent2 = parents[1]
+            while parent1 == candidate or parent2 == candidate or parent1 == parent2:
                 parents = random.sample(self.population, 2)
                 parent1 = random.choice(parents)
                 parent2 = random.choice(parents)
 
             childCandidate = candidate.crossover(parent1, parent2)
-            child = candidate.mutate(childCandidate, parent1, parent2)
-
+            child = candidate.mutate(parent1, parent2, childCandidate)
+            child.fitness()
+            childred.append(child)
             # print("Mutated")
+            """
             locationP1 = self.findParent(parent1)
             locationP2 = self.findParent(parent2)
-            if parent1.fitness() < child.fitness():
+            if parent1.fitness() > child.fitness():
                 self.population[locationP1] = child
-            elif parent2.fitness() < child.fitness():
+            elif parent2.fitness() > child.fitness():
                 self.population[locationP2] = child
             """
-            if parent1.fitness() < parent2.fitness():
-                self.population[locationP1] = child
-            else:
-                self.population[locationP2] = child
-            """
+        return childred
 
     def reunion(self, toAdd):
-        self.sizePop = self.sizePop + toAdd.size
-        self.population = self.population + [toAdd]
+        #self.sizePop = self.sizePop + toAdd.size
+        self.population = self.population + toAdd
 
     def selection(self, n):
-        if n < self.sizePop:
-            self.population = sorted(self.population, key=lambda Individual: Individual.fitness())
-            self.population = self.population[:n]
-            self.sizePop = n
+        #if n < self.sizePop:
+        self.population = sorted(self.population, key=lambda Individual: Individual.fitness())
+        self.population = self.population[:n]
+        self.sizePop = n
 
     def selectionDE(self, trialVector, p):
         for i in range(len(self.population)):
             if trialVector.fitness() < self.population[i].fitness():
                 self.population[i] = trialVector
+                break
 
     def best(self, n, p):
         aux = sorted(self.population, key=lambda Individual: Individual.fitness())
@@ -449,10 +452,11 @@ class Algorthm:
             parent1, parent2, parent3 = random.sample(self.population.population, 3)
             donorVector = self.population.population[k].mutate(parent1, parent2, parent3)
             trialVector = self.population.population[k].crossover(parent1, donorVector)
+
         offspringError = self.population.evaluate()
         print("LOG Global Error")
         print(offspringError/self.sizePop)
-        # self.population.selectionDE(trialVector, self.p)
+        #self.population.selectionDE(trialVector, self.p)
         self.population.reunion(trialVector)
         self.population.selection(self.noInd)
 
@@ -461,17 +465,20 @@ class Algorthm:
         no = self.noInd  # // 2
         offspring = Population(self.sizePop, no)
         k = 1
-        shuffle(self.population.population)
+        """
         for k in range(no):
-            parent1, parent2, parent3 = random.sample(self.population.population, 3)
+            parent1, parent2 = random.sample(self.population.population, 2)
             trialVector = self.population.population[k].crossover(parent1, parent2)
             donorVector = self.population.population[k].mutate(parent1, parent2, trialVector)
+        """
+        donorVector = self.population.evolve(no)
+        #donorVector.fitness()
         offspringError = self.population.evaluate()
         print("LOG Global Error")
         print(offspringError/self.sizePop)
-        # self.population.selectionDE(trialVector, self.p)
+        #self.population.selectionDE(trialVector, self.p)
         self.population.reunion(donorVector)
-        self.population.selection(self.noInd)
+        self.population.selection(self.noInd * 2)
 
     def run(self):
         finalOutput = []
@@ -484,7 +491,7 @@ class Algorthm:
         for k in range(self.generations):
             print(k)
             self.iteration()
-            if k % 50 == 0:
+            if k % 30 == 0:
                 #print("ENTERED")
                 #print(self.p.readCSV('input.xlsx', k, k+1))
                 candidate = self.p.readCSV('test_input.xlsx',  0, 17)
@@ -543,10 +550,12 @@ class Algorthm:
             f.write(str(data))
 
 
-
-a = Algorthm(50, 50, 1000)
+a = Algorthm(60, 60, 100)
 
 solution = a.run()
+
+solution[0].testAlgoritm()
+
 a.writeData("Learning.txt", solution[0].x)
 print(solution[-1].x, solution[-1].fitness())
 f = open("checking.txt", 'w')
@@ -577,3 +586,5 @@ output = []
 for sol in solution:
     output.append(str(sol.checkSolution([72.15, 0.565])))
 f.write(str(output)) # output is: 71.8
+
+
