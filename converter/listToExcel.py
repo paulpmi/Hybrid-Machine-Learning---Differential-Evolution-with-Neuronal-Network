@@ -1,6 +1,7 @@
 import csv
+import math
 
-f = open("../test.txt").readlines()
+f = open("../disection/test.txt").readlines()
 
 header = ["Output" + str(i) for i in range(len(f))]
 header = ["Start"] + header
@@ -14,6 +15,8 @@ for i in f:
     for j in i.split(','):
         number = ""
         for k in j:
+            if k == '-':
+                number += k
             if k != '.':
                 try:
                     float(k)
@@ -22,7 +25,10 @@ for i in f:
                     pass
             else:
                 number += '.'
-        data.append(float(number))
+        try:
+            data.append(float(number))
+        except ValueError:
+            pass
 
     print(data)
     alldata = []
@@ -30,6 +36,15 @@ for i in f:
     alldata.append(data)
     finalValues = zip(*alldata)
     with open('outputTest.csv', 'w', encoding="ISO-8859-1", newline='') as myfile:
+        writer = csv.DictWriter(myfile, fieldnames=header)
+        writer.writeheader()
+        wr = csv.writer(myfile)
+        wr.writerows(finalValues)
+
+    virtualOutput = [math.sin(i) for i in range(100)]
+    alldata.append(virtualOutput)
+    finalValues = zip(*alldata)
+    with open('virtualOutputTest.csv', 'w', encoding="ISO-8859-1", newline='') as myfile:
         writer = csv.DictWriter(myfile, fieldnames=header)
         writer.writeheader()
         wr = csv.writer(myfile)
